@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="hdr_mastering_metadata_unstable_v1">
+
+  <copyright>
+    Copyright © 2019 Intel
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="hdr mastering meta data protocol">
+    This protocol provides the ability to specify the mastering color volume
+    metadata for an HDR video, for a given surface.
+    These values give an idea of the brightness of the video, which can be
+    used by the display so that it can adjust itself for a better viewing
+    experience.
+
+    The hdr-metadata values are enocoded in the video and the client can
+    retreive these values and provide them to the compositor.
+
+    A client need to first get the color-space interface for the HDR
+    color-space using the color-manager protocol, via ICC profile.
+    Then it needs to get the hdr_mastering_surface using
+    hdr_mastering_metadata interface. The get_hdr_surface(), provides the
+    hdr_surface interface which can be used to set the hdr mastering meta-data.
+  </description>
+
+  <interface name="zwp_hdr_mastering_metadata_v1" version="1">
+    <description summary="hdr mastering metadata">
+      The hdr matering metadata is a singleton global object that provides
+      the extenstion hdr_surface for a given surface.
+    </description>
+
+    <enum summary="error">
+      <entry name="hdr_surface_exists" value="0"
+	      summary="The hdr surface exists for given surface."/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the hdr_mastering_metadata object">
+        Destroy the HDR mastering metadata object.
+      </description>
+    </request>
+
+    <request name="get_hdr_surface">
+      <description summary="get the interface for hdr_surface">
+        This interface is created for a surface and the hdr mastering metadata
+	should be attached to this surface.
+      </description>
+      <arg name="hdr_surface" type="new_id" interface="zwp_hdr_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+  </interface>
+
+  <interface name="zwp_hdr_surface_v1" version="1">
+    <description summary="an interface to add hdr mastering metadata">
+      An interface to add the hdr mastering metadata like MAX-CLL and MAX-FALL,
+      for a given surface.
+    </description>
+
+    <request name="set_hdr_mastering_metadata">
+      <description summary="set the hdr mastering metadata for the surface.">
+        This request is double buffered and it will be applied to the surface
+	on wl_surface::commit.
+      </description>
+      <arg name="max_cll" type="uint" summary="MAX Content Light Level"/>
+      <arg name="max_fall" type="uint" summary="MAX Frame Average Light Level"/>
+      <arg name="max_lum" type="uint" summary="MAX Luminance"/>
+      <arg name="min_lum" type="uint" summary="MIN Luminance"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the hdr mastering surface object">
+        Destroy the hdr_surface.
+      </description>
+    </request>
+  </interface>
+</protocol>
