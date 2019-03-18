@@ -119,7 +119,15 @@
       <arg name="id" type="new_id" interface="zwp_color_space_v1"/>
     </request>
 
-    <!-- TODO: HDR capabilities event -->
+    <event name="hdr_capability">
+      <description summary="HDR Capability">
+	This event is sent after creating a zwp_color_management_output
+	(see zwp_color_manager.get_color_management_output) and tells about the
+	HDR capability of an output. A value of '1' indicates that the output
+	is HDR capable, and '0' indicates a non-HDR output.
+      </description>
+      <arg name="hdr_support" type="uint"/>
+    </event>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the color management output">
@@ -171,7 +179,43 @@
       <arg name="render_intent" type="uint" enum="render_intent"/>
     </request>
 
-    <!-- TODO: HDR metadata request -->
+    <request name="set_hdr_metadata">
+      <description summary="set the hdr metadata for the surface">
+	Set the HDR-metadata for the underlying surface. The HDR-metadata is
+	double buffered, and will be applied at the time wl_surface.commit of
+	the corresponding wl_surface is called.
+	The HDR-metadata constitutes of MAX-CLL, MAX-FALL, Max Luminance and
+	Min Luminance as defined by SMPTE ST.2086. The clients get these values
+	for an HDR video via ffmpeg for a video stream/file.
+
+	MAX-CLL (Maximum Content Light Level) tells the brightest pixel in the
+	entire stream/file in nits. MAX-FALL (Maximum Frame Average Light Level)
+	tells the highest frame average brightness in nits for a single frame.
+	Max and Min Luminance tells the max/min Luminance for the mastering
+	display. All except for Minimum Luminace, can be represented by integer,
+	as they take values of the order of hundreds of nits.
+	For Minimum Luminance, fixed type is used so that it can take smaller
+	decimal values, which can be converted to and from double.
+
+	For setting color-primaries as part of HDR-metadata, the client should
+	manufacture the icc profile and then use the zwp_color_manager interface
+	to get the color-space, (see zwp_color_manager.create_color_space).
+	The request set_color_space can then be used to set the color-space.
+
+	A client may request for setting the HDR-metadata for a surface, even if
+	there is no HDR-capable output, compositor should handle such cases.
+
+	The HDR-metadata should be initialized with '-1' for a surface,
+	signifying that the values are invalid. So, If a client does not set
+	hdr-metadata values for a surface, i.e. does not request
+	set_hdr_metadata default value of '-1' will be there, telling the
+	compositor that there is no HDR-metadata for that surface.
+      </description>
+      <arg name="max_cll" type="uint"/>
+      <arg name="max_fall" type="uint"/>
+      <arg name="max_luminance" type="uint"/>
+      <arg name="min_luminance" type="fixed"/>
+    </request>
 
     <event name="preferred_color_space">
       <description summary="preferred color space">
